@@ -12,4 +12,5 @@ public class SchoolflickBackendApplication {
 		SpringApplication.run(SchoolflickBackendApplication.class, args);
 	}
 
+
 }
