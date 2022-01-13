@@ -1,4 +1,6 @@
-package com.koelapps.schoolflickbackend.Student;
+package com.koelapps.schoolflick.dao;
+
+import com.koelapps.schoolflick.entity.StudentEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

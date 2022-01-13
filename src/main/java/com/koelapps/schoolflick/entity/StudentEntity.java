@@ -1,4 +1,4 @@
-package com.koelapps.schoolflickbackend.Student;
+package com.koelapps.schoolflick.entity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
