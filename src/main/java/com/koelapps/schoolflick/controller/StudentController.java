@@ -1,12 +1,16 @@
 package com.koelapps.schoolflick.controller;
+
 import com.koelapps.schoolflick.dao.StudentRepository;
 import com.koelapps.schoolflick.entity.StudentEntity;
 import com.koelapps.schoolflick.response.ResponseHandler;
+import com.koelapps.schoolflick.service.EmailService;
 import com.koelapps.schoolflick.service.Students;
+import com.koelapps.schoolflick.utility.Utility;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,17 +34,49 @@ public class StudentController {
     @Autowired
     StudentRepository studentRepository;
 
+    @Autowired
+    EmailService emailService;
+
     //Create Students OR SIGNUP
     @PostMapping("/create")
     public ResponseEntity<Object> createStudent(@RequestBody StudentEntity student) {
 
         try {
-            StudentEntity savedStudent = students.saveStudents(student);
-
-            return ResponseHandler.generateResponse("Student Created Successfully", HttpStatus.OK, savedStudent);
-        }catch (Exception e) {
+            StudentEntity emailVerify = studentRepository.findByEmailId(student.getEmailId());
+            if(emailVerify != null) {
+                return ResponseHandler.generateResponse("Email Id already exists", HttpStatus.MULTI_STATUS, null);
+            } else {
+                StudentEntity savedStudents = students.saveStudents(student);
+                
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(student.getEmailId());
+                mailMessage.setSubject("Email Verification!");
+                mailMessage.setFrom("admin@koelapps.com");
+                mailMessage.setText("Paste this Link in postman with POST request : "
+                +"https://schoolflick-backend.herokuapp.com/api/v1/student/create/verify/"+savedStudents.getStudentId());
+    
+                emailService.sendEmail(mailMessage);
+                return ResponseHandler.generateResponse("A mail has been Sent for Verification", HttpStatus.OK, null);
+            }
+            
+        } catch (Exception e) {
             return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
         }
+                 
+    }
+
+    @PostMapping("create/verify/{id}")
+    public ResponseEntity<Object> verifyEmail(@PathVariable(value = "id") Integer studentId) {
+        try {
+            StudentEntity student = studentRepository.findById(studentId).get();
+            student.setEnabled(true);
+            studentRepository.save(student);
+            return ResponseHandler.generateResponse("Mail Verified Successfully", HttpStatus.OK, student); 
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
+        }
+        
+        
     }
 
     //Get All Students List from the Database
@@ -99,6 +135,44 @@ public class StudentController {
         response.put("deleted", Boolean.TRUE);
 
         return ResponseHandler.generateResponse("Student with the ID" + " "+ studentId +" " + "Deleted Successfully", HttpStatus.OK, response);
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
+        }
+    }
+
+    //Forgot Password
+    @PostMapping("/forgot_password")
+    public ResponseEntity<Object> forgotPassword(@RequestBody StudentEntity student) {
+        try {
+            StudentEntity findStudent = studentRepository.findByEmailId(student.getEmailId());
+            if(findStudent != null) {
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(student.getEmailId());
+                mailMessage.setSubject("Email Verification!");
+                mailMessage.setFrom("admin@koelapps.com");
+                mailMessage.setText("Paste this Link in postman with POST request to Reset Password : "
+                    +"https://schoolflick-backend.herokuapp.com/api/v1/student/reset-password/"+findStudent.getStudentId());
+
+                emailService.sendEmail(mailMessage);
+                return ResponseHandler.generateResponse("An Password Reset Link has sent to the email ID", HttpStatus.OK, null);
+             }else {
+                return ResponseHandler.generateResponse("Email ID not Found", HttpStatus.OK, null);
+             }
+            
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
+        }
+        
+    }
+
+    //Reset Password
+    @PostMapping("/reset-password/{id}")
+    public ResponseEntity<Object> resetPassword(@PathVariable(value = "id") Integer studentId, @RequestBody StudentEntity student) {
+        try {
+            StudentEntity studentEntity = studentRepository.findById(studentId).get();
+            studentEntity.setPassword(Utility.encrypt(student.getPassword()));
+            studentRepository.save(studentEntity);
+            return ResponseHandler.generateResponse("Password Changed Successfully", HttpStatus.OK, null);
         } catch (Exception e) {
             return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
         }

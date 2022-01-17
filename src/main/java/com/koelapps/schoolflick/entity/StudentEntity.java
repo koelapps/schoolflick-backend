@@ -32,6 +32,9 @@ public class StudentEntity {
 	@Column(name = "password", nullable = false)
 	private String password;
 
+	@Column(name = "enabled", nullable = false)
+	public boolean isEnabled;
+
 	public StudentEntity() {
 
 	}
@@ -93,6 +96,14 @@ public class StudentEntity {
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean getEnabled() {
+		return isEnabled;
+	}
+
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
 	}
 
 
