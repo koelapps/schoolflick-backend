@@ -5,6 +5,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+
+import org.apache.catalina.User;
 
 @Entity
 @Table(name = "students")
@@ -21,6 +25,8 @@ public class StudentEntity {
 	private String lastName;
 
 	@Column(name = "email", nullable = false)
+	@Email
+	@NotBlank
 	private String emailId;
 
 	@Column(name = "gender", nullable = false)
@@ -35,17 +41,24 @@ public class StudentEntity {
 	@Column(name = "enabled", nullable = false)
 	public boolean isEnabled;
 
+	@Column(name = "username", nullable = false)
+	private String username;
+
+	@Column(name = "token", nullable = false)
+	private String token;
+
 	public StudentEntity() {
 
 	}
 
-	public StudentEntity(String firstName, String lastName, String emailId, String gender, String userType, String password) {
+	public StudentEntity(String firstName, String lastName, String emailId, String gender, String userType, String password, String username) {
 		this.firstName = firstName;
 		this.lastName= lastName;
 		this.emailId = emailId;
 		this.gender = gender;
 		this.userType = userType;
 		this.password = password;
+		this.username = username;
 	}
 
 	public Integer getStudentId() {
@@ -98,6 +111,13 @@ public class StudentEntity {
 		this.password = password;
 	}
 
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public boolean getEnabled() {
 		return isEnabled;
 	}
@@ -106,11 +126,22 @@ public class StudentEntity {
 		this.isEnabled = isEnabled;
 	}
 
+	public String getToken() {
+		return token;
+	}
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 
 
 	@Override
 	public String toString() {
 		return "Student [studentId=" + studentId + ", firstName=" + firstName + ", lastName=" + lastName + ", emailId=" + emailId
 				+ "]";
+	}
+
+	public User orElseThrow(Object object) {
+		return null;
 	}
 }

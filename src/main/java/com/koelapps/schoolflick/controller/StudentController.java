@@ -43,8 +43,11 @@ public class StudentController {
 
         try {
             StudentEntity emailVerify = studentRepository.findByEmailId(student.getEmailId());
+            StudentEntity usernameVerify = studentRepository.findByUsername(student.getUsername());
             if(emailVerify != null) {
                 return ResponseHandler.generateResponse("Email Id already exists", HttpStatus.MULTI_STATUS, null);
+            } else if(usernameVerify != null) {
+                return ResponseHandler.generateResponse("Username already exists", HttpStatus.MULTI_STATUS, null);
             } else {
                 StudentEntity savedStudents = students.saveStudents(student);
                 
@@ -53,7 +56,7 @@ public class StudentController {
                 mailMessage.setSubject("Email Verification!");
                 mailMessage.setFrom("admin@koelapps.com");
                 mailMessage.setText("Paste this Link in postman with POST request : "
-                +"https://schoolflick-backend.herokuapp.com/api/v1/student/create/verify/"+savedStudents.getStudentId());
+                +"http://localhost:8080/api/v1/student/create/verify/"+savedStudents.getStudentId());
     
                 emailService.sendEmail(mailMessage);
                 return ResponseHandler.generateResponse("A mail has been Sent for Verification", HttpStatus.OK, null);
@@ -151,7 +154,7 @@ public class StudentController {
                 mailMessage.setSubject("Email Verification!");
                 mailMessage.setFrom("admin@koelapps.com");
                 mailMessage.setText("Paste this Link in postman with POST request to Reset Password : "
-                    +"https://schoolflick-backend.herokuapp.com/api/v1/student/reset-password/"+findStudent.getStudentId());
+                    +"http://localhost:8080/api/v1/student/reset-password/"+findStudent.getStudentId());
 
                 emailService.sendEmail(mailMessage);
                 return ResponseHandler.generateResponse("An Password Reset Link has sent to the email ID", HttpStatus.OK, null);
@@ -176,5 +179,26 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
         }
+    }
+
+    //Login
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@RequestBody StudentEntity student) {
+        try {
+            StudentEntity loginUser = studentRepository.findByUsername(student.getUsername());
+            String loginPassword = student.getPassword();
+            String encodedPassword = loginUser.getPassword();
+            Boolean password = Utility.validatePassword(loginPassword, encodedPassword);
+            if(password != true) {
+                return ResponseHandler.generateResponse("Invalid credentials", HttpStatus.OK, null);
+            } else {
+                String token = Utility.getJWTToken(student.getUsername());
+                loginUser.setToken(token);
+                return ResponseHandler.generateResponse("Login Successfully!", HttpStatus.OK, loginUser);
+            }
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
+        }
+        
     }
 }
