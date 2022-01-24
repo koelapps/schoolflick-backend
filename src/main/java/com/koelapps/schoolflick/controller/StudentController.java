@@ -73,7 +73,6 @@ public class StudentController {
                 StudentEntity savedStudent  = studentRepository.save(data);
                 logger.info("Creating and saving the student details into the database");
                 String ip = InetAddress.getLoopbackAddress().getHostName();
-                String local = InetAddress.getLocalHost().getHostAddress();
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 logger.info("Creating an email to send for verification");
                 mailMessage.setTo(student.getEmailId());
@@ -223,7 +222,6 @@ public class StudentController {
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 logger.info("Preparing to send Email to change password");
                 String ip = InetAddress.getLoopbackAddress().getHostName();
-                String local = InetAddress.getLocalHost().getHostAddress();
                 mailMessage.setTo(student.getEmailId());
                 mailMessage.setSubject("Email Verification!");
                 mailMessage.setFrom("md.asad@koelapps.com");
