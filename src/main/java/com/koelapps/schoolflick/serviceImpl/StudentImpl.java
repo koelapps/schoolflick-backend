@@ -25,6 +25,7 @@ public class StudentImpl implements Students {
         data.setUserType(student.getUserType());
         data.setPassword(Utility.encrypt(student.getPassword()));
         data.setUsername(student.getUsername());
+        data.setVerificationToken(student.getVerificationToken());
 
         StudentEntity savedStudent  = studentRepository.save(data);
 

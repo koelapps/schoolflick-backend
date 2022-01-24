@@ -22,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/student")
@@ -56,16 +58,29 @@ public class StudentController {
             } else if(usernameVerify != null) {
                 logger.warn("username already exists!");
                 return ResponseHandler.generateResponse("Username already exists", HttpStatus.MULTI_STATUS, null);
-            } else {
-                StudentEntity savedStudents = students.saveStudents(student);
+            } else {   
+                String token = UUID.randomUUID().toString();
+                student.setVerificationToken(token);
+                StudentEntity data = new StudentEntity();
+                data.setFirstName(student.getFirstName());
+                data.setLastName(student.getLastName());
+                data.setEmailId(student.getEmailId());
+                data.setGender(student.getGender());
+                data.setUserType(student.getUserType());
+                data.setPassword(Utility.encrypt(student.getPassword()));
+                data.setUsername(student.getUsername());
+                data.setVerificationToken(token);
+                StudentEntity savedStudent  = studentRepository.save(data);
                 logger.info("Creating and saving the student details into the database");
+                String ip = InetAddress.getLoopbackAddress().getHostName();
+                String local = InetAddress.getLocalHost().getHostAddress();
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 logger.info("Creating an email to send for verification");
                 mailMessage.setTo(student.getEmailId());
                 mailMessage.setSubject("Email Verification!");
-                mailMessage.setFrom("admin@koelapps.com");
-                mailMessage.setText("Paste this Link in postman with POST request : "
-                +"http://localhost:8080/api/v1/student/create/verify/"+savedStudents.getStudentId());
+                mailMessage.setFrom("md.asad@koelapps.com");
+                mailMessage.setText("paste this Link in Postman to verify your Email : "
+                +ip+":8080/api/v1/student/create/verify/"+savedStudent.getStudentId()+"/"+token);
     
                 emailService.sendEmail(mailMessage);
                 logger.info("An email has been sent to the Email ID of the student for verification");
@@ -79,23 +94,48 @@ public class StudentController {
                  
     }
 
-    @PostMapping("create/verify/{id}")
-    public ResponseEntity<Object> verifyEmail(@PathVariable(value = "id") Integer studentId) {
+    @PostMapping("create/verify/{id}/{token}")
+    public ResponseEntity<Object> verifyEmail(@PathVariable(value = "id") Integer studentId, @PathVariable(value = "token") String verifyToken) {
         logger.info("Executing API to verify EmailID");
         try {
-            StudentEntity student = studentRepository.findById(studentId).get();
-            logger.info("Fetching Email Id from the database");
-            student.setEnabled(true);
-            logger.info("The profile is set to Enabled");
-            studentRepository.save(student);
-            logger.info("Email Id has been verified and Account has been created Successfully");
-            return ResponseHandler.generateResponse("Mail Verified Successfully", HttpStatus.OK, student); 
+            StudentEntity student = studentRepository.findByVerificationToken(verifyToken);
+            String verify = student.getVerificationToken();
+            if (verify != null && student.isEnabled == false) {
+                logger.info("Fetching Email Id from the database");
+                student.setEnabled(true);
+                logger.info("The profile is set to Enabled");
+                studentRepository.save(student);
+                logger.info("Email Id has been verified and Account has been created Successfully");
+                return ResponseHandler.generateResponse("Mail Verified Successfully", HttpStatus.OK, student);
+            } else {
+                return ResponseHandler.generateResponse("Mail is Already Verified and Account created successfully", HttpStatus.OK, null);
+            }
+           
         } catch (Exception e) {
             logger.error(e.getMessage());
             return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
+        } 
+        
+    }
+
+    @PostMapping("/create/verify/resend/{id}")
+    public ResponseEntity<Object> resendEmail(@PathVariable(value = "id") Integer studentId) {
+        StudentEntity student = studentRepository.findById(studentId).get();
+        String token = student.getVerificationToken();
+        if (student.isEnabled == true) {
+            return ResponseHandler.generateResponse("Mail Already verified", HttpStatus.OK, null);
+        } else {
+            String ip = InetAddress.getLoopbackAddress().getHostName();
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setTo(student.getEmailId());
+            mailMessage.setSubject("Email Verification!");
+            mailMessage.setFrom("md.asad@koelapps.com");
+            mailMessage.setText("paste this Link in Postman to verify your Email : "
+            +ip+":8080/api/v1/student/create/verify/"+student.getStudentId()+"/"+token);
+
+            emailService.sendEmail(mailMessage);
+            return ResponseHandler.generateResponse("A mail has resent successfully", HttpStatus.OK, null);
         }
-        
-        
     }
 
     //Get All Students List from the Database
@@ -182,11 +222,13 @@ public class StudentController {
             if(findStudent != null) {
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 logger.info("Preparing to send Email to change password");
+                String ip = InetAddress.getLoopbackAddress().getHostName();
+                String local = InetAddress.getLocalHost().getHostAddress();
                 mailMessage.setTo(student.getEmailId());
                 mailMessage.setSubject("Email Verification!");
-                mailMessage.setFrom("admin@koelapps.com");
-                mailMessage.setText("Paste this Link in postman with POST request to Reset Password : "
-                    +"http://localhost:8080/api/v1/student/reset-password/"+findStudent.getStudentId());
+                mailMessage.setFrom("md.asad@koelapps.com");
+                mailMessage.setText("paste this Link in Postman to reset your password : "
+                +ip+":8080/api/v1/student/reset-password/"+findStudent.getStudentId());
 
                 emailService.sendEmail(mailMessage);
                 logger.info("An Email has been sent to verify and reset password");
@@ -235,6 +277,8 @@ public class StudentController {
             if(password != true) {
                 logger.error("password doesn't matches");
                 return ResponseHandler.generateResponse("Invalid credentials", HttpStatus.OK, null);
+            } else if(loginUser.isEnabled == false) {
+                return ResponseHandler.generateResponse("Email not verified", HttpStatus.OK, null);
             } else {
                 String token = Utility.getJWTToken(student.getUsername());
                 logger.info("generating tokens for authentication");

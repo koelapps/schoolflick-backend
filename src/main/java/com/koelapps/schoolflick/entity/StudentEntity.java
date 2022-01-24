@@ -47,6 +47,9 @@ public class StudentEntity {
 	@Column(name = "token", nullable = false)
 	private String token;
 
+	@Column(name = "verification_token", nullable = false)
+	private String verificationToken;
+
 	public StudentEntity() {
 
 	}
@@ -131,6 +134,13 @@ public class StudentEntity {
 	}
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getVerificationToken(){
+		return verificationToken;
+	}
+	public void setVerificationToken(String verificationToken){
+		this.verificationToken = verificationToken;
 	}
 
 

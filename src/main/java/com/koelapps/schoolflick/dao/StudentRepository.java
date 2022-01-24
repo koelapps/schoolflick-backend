@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
     StudentEntity findByEmailId(String emailId);
     StudentEntity findByUsername(String username);
+    StudentEntity findByVerificationToken(String verificationToken);
 
     Boolean existsByUsername(String username);
     Boolean existsByEmailId(String emailId);
