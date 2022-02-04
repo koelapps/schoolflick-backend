@@ -1,4 +1,5 @@
 package com.koelapps.schoolflick.entity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -54,9 +55,10 @@ public class StudentEntity {
 
 	}
 
-	public StudentEntity(String firstName, String lastName, String emailId, String gender, String userType, String password, String username) {
+	public StudentEntity(String firstName, String lastName, String emailId, String gender, String userType,
+			String password, String username) {
 		this.firstName = firstName;
-		this.lastName= lastName;
+		this.lastName = lastName;
 		this.emailId = emailId;
 		this.gender = gender;
 		this.userType = userType;
@@ -75,6 +77,7 @@ public class StudentEntity {
 	public String getFirstName() {
 		return firstName;
 	}
+
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
@@ -82,6 +85,7 @@ public class StudentEntity {
 	public String getLastName() {
 		return lastName;
 	}
+
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
@@ -89,6 +93,7 @@ public class StudentEntity {
 	public String getEmailId() {
 		return emailId;
 	}
+
 	public void setEmailId(String emailId) {
 		this.emailId = emailId;
 	}
@@ -96,6 +101,7 @@ public class StudentEntity {
 	public String getGender() {
 		return gender;
 	}
+
 	public void setGender(String gender) {
 		this.gender = gender;
 	}
@@ -103,6 +109,7 @@ public class StudentEntity {
 	public String getUserType() {
 		return userType;
 	}
+
 	public void setUserType(String userType) {
 		this.userType = userType;
 	}
@@ -110,6 +117,7 @@ public class StudentEntity {
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -117,6 +125,7 @@ public class StudentEntity {
 	public String getUsername() {
 		return username;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -132,22 +141,23 @@ public class StudentEntity {
 	public String getToken() {
 		return token;
 	}
+
 	public void setToken(String token) {
 		this.token = token;
 	}
 
-	public String getVerificationToken(){
+	public String getVerificationToken() {
 		return verificationToken;
 	}
-	public void setVerificationToken(String verificationToken){
+
+	public void setVerificationToken(String verificationToken) {
 		this.verificationToken = verificationToken;
 	}
 
-
-
 	@Override
 	public String toString() {
-		return "Student [studentId=" + studentId + ", firstName=" + firstName + ", lastName=" + lastName + ", emailId=" + emailId
+		return "Student [studentId=" + studentId + ", firstName=" + firstName + ", lastName=" + lastName + ", emailId="
+				+ emailId
 				+ "]";
 	}
 
