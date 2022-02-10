@@ -11,10 +11,11 @@
 	<groupId>com.koelapps</groupId>
 	<artifactId>schoolflick-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>schoolflick-backend</name>
 	<description>school flick backend using spring boot, postgresql</description>
 	<properties>
-		<java.version>8</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

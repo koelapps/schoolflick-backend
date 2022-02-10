@@ -1,7 +1,5 @@
 package com.koelapps.schoolflick.entity;
 
-import java.util.UUID;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
